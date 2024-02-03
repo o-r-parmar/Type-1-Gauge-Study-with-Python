@@ -1,10 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-
-file_path = r'C:\Users\ompar\iCloudDrive\Capability-Script\Type1\Data.xlsx'
-sheet_name = 'Sheet1'
-df = pd.read_excel(file_path, sheet_name=sheet_name)
+from PIL import Image
 
 #MEAN
 def calculate_mean(file_path, sheet_name='Sheet1', col_index=None):
@@ -206,27 +203,90 @@ def calculate_percent_var(file_path, sheet_name='Sheet1', col_index=None, K=20):
     # Return a dictionary with the column name and its % Var and Cg value
     return {'% Var': percent_var}
 
-col_index = 1
-means = calculate_mean(file_path,col_index=col_index)
-std = calculate_std(file_path,col_index=col_index)
-stdy_var = calculate_stdy_var(file_path,col_index=col_index)
-tolerance = calculate_tolerance(file_path,col_index=col_index)
-num_meas = calculate_num_meas(file_path,col_index=col_index)
-t_stat = calculate_t_stats(file_path,col_index=col_index,ref_value=255)
-Cg = calculate_Cg(file_path,col_index=col_index)
-Cgk = calculate_Cgk(file_path,col_index=col_index,ref_value=255)
-var_percent = calculate_percent_var(file_path,col_index=col_index)
+def generate_graph(col_index = None):
+    if col_index is None:
+        raise ValueError("Column index is required.")
+    if col_index < 0 or col_index >= len(df.columns):
+        raise ValueError("Column index is out of range.")
+    
+    col_index = 1
+    means = calculate_mean(file_path,col_index=col_index)
+    std = calculate_std(file_path,col_index=col_index)
+    stdy_var = calculate_stdy_var(file_path,col_index=col_index)
+    tolerance = calculate_tolerance(file_path,col_index=col_index)
+    num_meas = calculate_num_meas(file_path,col_index=col_index)
+    t_stat = calculate_t_stats(file_path,col_index=col_index,ref_value=255)
+    Cg = calculate_Cg(file_path,col_index=col_index)
+    Cgk = calculate_Cgk(file_path,col_index=col_index,ref_value=255)
+    var_percent = calculate_percent_var(file_path,col_index=col_index)
 
-USL = tolerance['Tolerance']['USL']
-LSL = tolerance['Tolerance']['LSL']
-plt.figure(figsize=(10, 6))
-plt.plot(df.iloc[:,0], df.iloc[:,col_index], marker='o')
-plt.title('Run Chart')
-plt.xlabel('Date')
-plt.ylabel('Value')
-plt.ylim(LSL-10,USL+10)
-plt.axhline(y=LSL, color='r', linestyle='-', label='LSL')
-plt.axhline(y=USL, color='r', linestyle='-', label='USL')
-plt.grid(True)
-plt.show()
+    results = {
+        "Mean": means['Mean'],
+        "Std Deviation": std['Std Deviation'],
+        "Study Variation": stdy_var['Study Variable'],
+        "USL": tolerance['Tolerance']['USL'],
+        "LSL": tolerance['Tolerance']['LSL'],
+        "# of Measurements": num_meas['# of Measurments'],
+        "t-Statistics": t_stat['t-Statistics'],
+        "Cg": Cg['Cg'],
+        "Cgk": Cgk['Cgk'],
+        "% Var": var_percent['% Var']
+    }
 
+    titles = list(results.keys())
+    values = [f"{value:.2f}" if isinstance(value, float) else str(value) for value in results.values()]
+    USL = tolerance['Tolerance']['USL']
+    LSL = tolerance['Tolerance']['LSL']
+    plt.figure(figsize=(12, 10))  # Increased figure size to accommodate table below
+    plt.subplot(211)  # Adjust this to create space for the table
+    plt.plot(df.iloc[:,0], df.iloc[:,col_index], marker='o')
+    plt.title('Run Chart')
+    plt.xlabel('Observations')
+    plt.ylabel('Data')
+    plt.ylim(LSL-10,USL+10)
+    plt.axhline(y=LSL, color='r', linestyle='-', label='LSL')
+    plt.axhline(y=USL, color='r', linestyle='-', label='USL')
+    plt.grid(True)
+    plt.legend()
+
+    # Prepare table data
+    metrics = ["Mean", "Std Deviation", "Study Variation", "USL", "LSL", "# of Measurements", "t-Statistics", "Cg", "Cgk", "% Var"]
+    values = [means["Mean"], std["Std Deviation"], stdy_var["Study Variable"], USL, LSL, num_meas["# of Measurments"], t_stat["t-Statistics"], Cg["Cg"], Cgk["Cgk"], var_percent["% Var"]]
+
+    # Convert all numeric values to formatted strings for display
+    formatted_values = [f"{value:.2f}" if isinstance(value, float) else str(value) for value in values]
+
+    # Adding the table below the run chart
+    table = plt.table(cellText=list(zip(metrics, formatted_values)),
+            colLabels=['Metric', 'Value'],
+            cellLoc='center', 
+            loc='bottom', 
+            bbox=[0.25, -1.2, 0.5, 1])  # Adjust bbox as needed to fit the table properly
+
+    for (i, j), cell in table.get_celld().items():
+        if i == 0:  # The first row, i.e., the column labels
+            cell.set_fontsize(12)  # Optional: Adjust fontsize as needed
+            cell.set_text_props(fontweight='bold')  # Making the text bold
+
+    # Adjust layout
+    plt.subplots_adjust(left=0.2, bottom=0.2, top=0.95)
+    plt.savefig('type_1.png', format='png', dpi=300)
+    plt.show()
+
+    # Open the image file
+    img = Image.open('type_1.png')
+
+    left = 350
+    top = 0
+    right = 3510
+    bottom = 2550
+    cropped_img = img.crop((left, top, right, bottom))
+
+    # Save the cropped image
+    cropped_img.save('type_1_cropped.png')
+
+file_path = r'Data.xlsx'
+sheet_name = 'Sheet1'
+df = pd.read_excel(file_path, sheet_name=sheet_name)
+
+generate_graph(col_index=1)
