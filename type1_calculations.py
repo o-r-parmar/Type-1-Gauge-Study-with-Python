@@ -25,8 +25,6 @@ def calculate_mean(file_path, sheet_name='Sheet1', col_index=None):
     return {'Mean': mean_value}
 
 #STD DEVIATION
-import pandas as pd
-
 def calculate_std(file_path, sheet_name='Sheet1', col_index=None):
     # Read the Excel file
     df = pd.read_excel(file_path, sheet_name=sheet_name)
@@ -89,8 +87,6 @@ def calculate_tolerance(file_path, sheet_name='Sheet1', col_index=None):
     return {'Tolerance': tolerance}
 
 #NUMBER OF MEASUREMENTS
-import pandas as pd
-
 def calculate_num_meas(file_path, sheet_name='Sheet1', col_index=None):
     # Read the Excel file
     df = pd.read_excel(file_path, sheet_name=sheet_name)
@@ -135,6 +131,7 @@ def calculate_t_stats(file_path, sheet_name='Sheet1', ref_value=None, col_index=
     # Return a dictionary with the column heading and the corresponding t-score
     return {'t-Statistics': t_stat}
 
+#Cg
 def calculate_Cg(file_path, sheet_name='Sheet1', col_index=None, K=20):
     # Read the Excel file
     df = pd.read_excel(file_path, sheet_name=sheet_name)
@@ -156,6 +153,7 @@ def calculate_Cg(file_path, sheet_name='Sheet1', col_index=None, K=20):
     # Return a dictionary with the column name and its Cg value
     return {'Cg': Cg}
 
+#Cgk
 def calculate_Cgk(file_path, sheet_name='Sheet1', col_index=None, K=20, ref_value=None):
     # Read the Excel file
     df = pd.read_excel(file_path, sheet_name=sheet_name)
@@ -182,6 +180,7 @@ def calculate_Cgk(file_path, sheet_name='Sheet1', col_index=None, K=20, ref_valu
     column_name = df.columns[col_index]
     return {'Cgk': Cgk}
 
+#%Var
 def calculate_percent_var(file_path, sheet_name='Sheet1', col_index=None, K=20):
     # Read the Excel file
     df = pd.read_excel(file_path, sheet_name=sheet_name)
@@ -217,16 +216,6 @@ t_stat = calculate_t_stats(file_path,col_index=col_index,ref_value=255)
 Cg = calculate_Cg(file_path,col_index=col_index)
 Cgk = calculate_Cgk(file_path,col_index=col_index,ref_value=255)
 var_percent = calculate_percent_var(file_path,col_index=col_index)
-
-print(means)
-print(std)
-print(stdy_var)
-print(tolerance)
-print(num_meas)
-print(t_stat)
-print(Cg)
-print(Cgk)
-print(var_percent)
 
 USL = tolerance['Tolerance']['USL']
 LSL = tolerance['Tolerance']['LSL']
