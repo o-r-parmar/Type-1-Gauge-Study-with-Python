@@ -203,6 +203,7 @@ def calculate_percent_var(file_path, sheet_name='Sheet1', col_index=None, K=20):
     # Return a dictionary with the column name and its % Var and Cg value
     return {'% Var': percent_var}
 
+#Graph generation
 def generate_graph(col_index = None):
     if col_index is None:
         raise ValueError("Column index is required.")
