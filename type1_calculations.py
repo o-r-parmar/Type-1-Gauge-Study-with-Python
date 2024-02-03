@@ -210,7 +210,6 @@ def generate_graph(col_index = None):
     if col_index < 0 or col_index >= len(df.columns):
         raise ValueError("Column index is out of range.")
     
-    col_index = 1
     means = calculate_mean(file_path,col_index=col_index)
     std = calculate_std(file_path,col_index=col_index)
     stdy_var = calculate_stdy_var(file_path,col_index=col_index)
@@ -251,8 +250,8 @@ def generate_graph(col_index = None):
     plt.legend()
 
     # Prepare table data
-    metrics = ["Mean", "Std Deviation", "Study Variation", "USL", "LSL", "# of Measurements", "t-Statistics", "Cg", "Cgk", "% Var"]
-    values = [means["Mean"], std["Std Deviation"], stdy_var["Study Variable"], USL, LSL, num_meas["# of Measurments"], t_stat["t-Statistics"], Cg["Cg"], Cgk["Cgk"], var_percent["% Var"]]
+    metrics = ["Mean", "Std Deviation", "Study Variation (6*Std Deviation)", "# of Measurements", "t-Statistics", "Cg", "Cgk", "% Var"]
+    values = [means["Mean"], std["Std Deviation"], stdy_var["Study Variable"], num_meas["# of Measurments"], t_stat["t-Statistics"], Cg["Cg"], Cgk["Cgk"], var_percent["% Var"]]
 
     # Convert all numeric values to formatted strings for display
     formatted_values = [f"{value:.2f}" if isinstance(value, float) else str(value) for value in values]
@@ -262,7 +261,7 @@ def generate_graph(col_index = None):
             colLabels=['Metric', 'Value'],
             cellLoc='center', 
             loc='bottom', 
-            bbox=[0.25, -1.2, 0.5, 1])  # Adjust bbox as needed to fit the table properly
+            bbox=[0.125, -1.2, 0.75, 1])  # Adjust bbox as needed to fit the table properly
 
     for (i, j), cell in table.get_celld().items():
         if i == 0:  # The first row, i.e., the column labels
@@ -284,10 +283,13 @@ def generate_graph(col_index = None):
     cropped_img = img.crop((left, top, right, bottom))
 
     # Save the cropped image
-    cropped_img.save('type_1_cropped.png')
+    cropped_img.save(f'type_1_{col_index}.png')
 
 file_path = r'Data.xlsx'
 sheet_name = 'Sheet1'
 df = pd.read_excel(file_path, sheet_name=sheet_name)
 
 generate_graph(col_index=1)
+generate_graph(col_index=2)
+generate_graph(col_index=3)
+generate_graph(col_index=4)
