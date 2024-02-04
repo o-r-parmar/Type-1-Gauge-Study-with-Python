@@ -52,7 +52,6 @@ def calculate_stdy_var(file_path, sheet_name='Sheet1', col_index=None):
     column_name = df.columns[col_index]
 
     # Calculate the study variation for the specified column
-    # Study variation is often defined as 6 times the standard deviation in manufacturing contexts
     study_variation = df.iloc[:, col_index].std(ddof=1) * 6
     
     # Return a dictionary with the column name and study variation value
@@ -76,8 +75,8 @@ def calculate_tolerance(file_path, sheet_name='Sheet1', col_index=None):
 
     # Calculate USL and LSL for the specified column
     tolerance = {
-        'USL': mean_value + std_dev_value_x_6,  # Upper Specification Limit
-        'LSL': mean_value - std_dev_value_x_6   # Lower Specification Limit
+        'USL': mean_value + std_dev_value_x_6,
+        'LSL': mean_value - std_dev_value_x_6
     }
 
     # Return a dictionary with the column name and its tolerance values
@@ -143,7 +142,6 @@ def calculate_Cg(file_path, sheet_name='Sheet1', col_index=None, K=20):
     SV = calculate_stdy_var(file_path, sheet_name, col_index)['Study Variable']
     
     # Calculate Cg for the specified column
-    # Tolerance is the difference between USL and LSL
     tolerance_range = tolerance['USL'] - tolerance['LSL']
     Cg = (K / 100) * (tolerance_range / SV)
 
@@ -197,19 +195,19 @@ def calculate_percent_var(file_path, sheet_name='Sheet1', col_index=None, K=20):
     # Calculate % Var for the specified column
     percent_var = (SV / tolerance_range) * 100
     
-    # Calculate Cg if needed based on % Var and K
-    Cg = K / percent_var if percent_var != 0 else float('inf')
-    
     # Return a dictionary with the column name and its % Var and Cg value
     return {'% Var': percent_var}
 
 #Graph generation
 def generate_graph(col_index = None):
+    df = pd.read_excel(file_path, sheet_name=sheet_name)
+
     if col_index is None:
         raise ValueError("Column index is required.")
     if col_index < 0 or col_index >= len(df.columns):
         raise ValueError("Column index is out of range.")
     
+    #calling all the functions
     means = calculate_mean(file_path,col_index=col_index)
     std = calculate_std(file_path,col_index=col_index)
     stdy_var = calculate_stdy_var(file_path,col_index=col_index)
@@ -237,7 +235,7 @@ def generate_graph(col_index = None):
     values = [f"{value:.2f}" if isinstance(value, float) else str(value) for value in results.values()]
     USL = tolerance['Tolerance']['USL']
     LSL = tolerance['Tolerance']['LSL']
-    plt.figure(figsize=(12, 10))  # Increased figure size to accommodate table below
+    plt.figure(figsize=(12, 10))
     plt.subplot(211)  # Adjust this to create space for the table
     plt.plot(df.iloc[:,0], df.iloc[:,col_index], marker='o')
     plt.title('Run Chart')
@@ -287,7 +285,6 @@ def generate_graph(col_index = None):
 
 file_path = r'Data.xlsx'
 sheet_name = 'Sheet1'
-df = pd.read_excel(file_path, sheet_name=sheet_name)
 
 generate_graph(col_index=1)
 generate_graph(col_index=2)
