@@ -231,17 +231,21 @@ def generate_graph(col_index = None):
         "% Var": var_percent['% Var']
     }
 
-    titles = list(results.keys())
-    values = [f"{value:.2f}" if isinstance(value, float) else str(value) for value in results.values()]
     USL = tolerance['Tolerance']['USL']
     LSL = tolerance['Tolerance']['LSL']
+    range_buffer_percentage = 0.05  # Adjust the buffer percentage as needed
+    range_buffer = (USL - LSL) * range_buffer_percentage
+    new_LSL = LSL - range_buffer
+    new_USL = USL + range_buffer
+    values = [f"{value:.2f}" if isinstance(value, float) else str(value) for value in results.values()]
     plt.figure(figsize=(12, 10))
     plt.subplot(211)  # Adjust this to create space for the table
     plt.plot(df.iloc[:,0], df.iloc[:,col_index], marker='o')
     plt.title(f'Type 1 Gage Study for {df.columns[col_index]}')
+    print(df.columns[col_index])
     plt.xlabel('Observations')
     plt.ylabel('Data')
-    plt.ylim(LSL-10,USL+10)
+    plt.ylim(new_LSL,new_USL)
     plt.axhline(y=LSL, color='r', linestyle='--', label='LSL')
     plt.axhline(y=USL, color='r', linestyle='--', label='USL')
     plt.grid(True)
@@ -268,11 +272,11 @@ def generate_graph(col_index = None):
 
     # Adjust layout
     plt.subplots_adjust(left=0.2, bottom=0.2, top=0.95)
-    plt.savefig('type_1.png', format='png', dpi=300)
+    plt.savefig('./Images/type_1.png', format='png', dpi=300)
     plt.show()
 
     # Open the image file
-    img = Image.open('type_1.png')
+    img = Image.open('./Images/type_1.png')
     left = 350
     top = 0
     right = 3510
@@ -280,7 +284,7 @@ def generate_graph(col_index = None):
     cropped_img = img.crop((left, top, right, bottom))
 
     # Save the cropped image
-    cropped_img.save(f'type_1_{col_index}.png')
+    cropped_img.save(f'./Images/Graph_Col{col_index}.png')
 
 file_path = r'Data.xlsx'
 sheet_name = 'Sheet1'
