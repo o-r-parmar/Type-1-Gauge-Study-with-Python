@@ -242,7 +242,6 @@ def generate_graph(col_index = None):
     plt.subplot(211)  # Adjust this to create space for the table
     plt.plot(df.iloc[:,0], df.iloc[:,col_index], marker='o')
     plt.title(f'Type 1 Gage Study for {df.columns[col_index]}')
-    print(df.columns[col_index])
     plt.xlabel('Observations')
     plt.ylabel('Data')
     plt.ylim(new_LSL,new_USL)
@@ -286,7 +285,7 @@ def generate_graph(col_index = None):
     # Save the cropped image
     cropped_img.save(f'./Images/Graph_Col{col_index}.png')
 
-file_path = r'Data.xlsx'
+file_path = 'Data.xlsx'
 sheet_name = 'Sheet1'
 
 generate_graph(col_index=1)
