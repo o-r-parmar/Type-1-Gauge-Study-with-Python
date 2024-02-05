@@ -238,12 +238,12 @@ def generate_graph(col_index = None):
     plt.figure(figsize=(12, 10))
     plt.subplot(211)  # Adjust this to create space for the table
     plt.plot(df.iloc[:,0], df.iloc[:,col_index], marker='o')
-    plt.title('Run Chart')
+    plt.title(f'Type 1 Gage Study for {df.columns[col_index]}')
     plt.xlabel('Observations')
     plt.ylabel('Data')
     plt.ylim(LSL-10,USL+10)
-    plt.axhline(y=LSL, color='r', linestyle='-', label='LSL')
-    plt.axhline(y=USL, color='r', linestyle='-', label='USL')
+    plt.axhline(y=LSL, color='r', linestyle='--', label='LSL')
+    plt.axhline(y=USL, color='r', linestyle='--', label='USL')
     plt.grid(True)
     plt.legend()
 
@@ -273,7 +273,6 @@ def generate_graph(col_index = None):
 
     # Open the image file
     img = Image.open('type_1.png')
-
     left = 350
     top = 0
     right = 3510
