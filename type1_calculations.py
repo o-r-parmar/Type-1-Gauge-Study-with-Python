@@ -199,11 +199,15 @@ def calculate_percent_var(file_path, sheet_name='Sheet1', col_index=None, K=20):
     return {'% Var': percent_var}
 
 #Graph generation
-def generate_graph(col_index = None):
+def generate_graph(col_index = None, ref_value=None):
     df = pd.read_excel(file_path, sheet_name=sheet_name)
 
+    # Validate col_index
     if col_index is None:
         raise ValueError("Column index is required.")
+    # Validate ref_value
+    if ref_value is None:
+        raise ValueError("Refrence Value is required.")
     if col_index < 0 or col_index >= len(df.columns):
         raise ValueError("Column index is out of range.")
     
@@ -233,7 +237,7 @@ def generate_graph(col_index = None):
 
     USL = tolerance['Tolerance']['USL']
     LSL = tolerance['Tolerance']['LSL']
-    range_buffer_percentage = 0.05  # Adjust the buffer percentage as needed
+    range_buffer_percentage = 0.30  # Adjust the buffer percentage as needed
     range_buffer = (USL - LSL) * range_buffer_percentage
     new_LSL = LSL - range_buffer
     new_USL = USL + range_buffer
@@ -247,6 +251,7 @@ def generate_graph(col_index = None):
     plt.ylim(new_LSL,new_USL)
     plt.axhline(y=LSL, color='r', linestyle='--', label='LSL')
     plt.axhline(y=USL, color='r', linestyle='--', label='USL')
+    plt.axhline(y=ref_value, color='g', linestyle='-', label='USL', lw=0.5)
     plt.grid(True)
     plt.legend()
 
@@ -288,7 +293,4 @@ def generate_graph(col_index = None):
 file_path = 'Data.xlsx'
 sheet_name = 'Sheet1'
 
-generate_graph(col_index=1)
-generate_graph(col_index=2)
-generate_graph(col_index=3)
-generate_graph(col_index=4)
+generate_graph(col_index=4, ref_value=470)
