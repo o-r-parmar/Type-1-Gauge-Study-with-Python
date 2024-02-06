@@ -107,7 +107,7 @@ def calculate_t_stats(file_path, sheet_name='Sheet1', ref_value=None, col_index=
 
     # Validate col_index and ref_value
     if ref_value is None:
-        raise ValueError("Reference value parameter is required but was not provided.")
+        raise ValueError("Reference value parameter is required.")
     if col_index is None or col_index >= len(df.columns):
         raise ValueError("Column index is required and must be within the range of available columns.")
     
@@ -128,22 +128,21 @@ def calculate_t_stats(file_path, sheet_name='Sheet1', ref_value=None, col_index=
     return {'t-Statistics': t_stat}
 
 #Cg
-def calculate_Cg(file_path, sheet_name='Sheet1', col_index=None, K=20):
+def calculate_Cg(file_path, sheet_name='Sheet1', col_index=None, K=20, tolerance=None):
     # Read the Excel file
     df = pd.read_excel(file_path, sheet_name=sheet_name)
     
     # Validate col_index
     if col_index is None or col_index >= len(df.columns):
         raise ValueError("Column index is required and must be within the range of available columns.")
+    if tolerance is None:
+        raise ValueError("Tolerance is required.")
 
     # Use the previously defined functions to calculate mean, study variation, and tolerance
-    mean_value = calculate_mean(file_path, sheet_name, col_index)['Mean']
-    tolerance = calculate_tolerance(file_path, sheet_name, col_index)['Tolerance']
     SV = calculate_stdy_var(file_path, sheet_name, col_index)['Study Variable']
     
     # Calculate Cg for the specified column
-    tolerance_range = tolerance['USL'] - tolerance['LSL']
-    Cg = (K / 100) * (tolerance_range / SV)
+    Cg = (K / 100) * ( tolerance/ SV)
 
     # Return a dictionary with the column name and its Cg value
     return {'Cg': Cg}
@@ -199,12 +198,15 @@ def calculate_percent_var(file_path, sheet_name='Sheet1', col_index=None, K=20):
     return {'% Var': percent_var}
 
 #Graph generation
-def generate_graph(col_index = None, ref_value=None):
+def generate_graph(col_index = None, ref_value=None, tol=None):
     df = pd.read_excel(file_path, sheet_name=sheet_name)
 
     # Validate col_index
     if col_index is None:
         raise ValueError("Column index is required.")
+    # Validate tolerance
+    if tol is None:
+        raise ValueError("Tolerance  is required.")
     # Validate ref_value
     if ref_value is None:
         raise ValueError("Refrence Value is required.")
@@ -217,8 +219,8 @@ def generate_graph(col_index = None, ref_value=None):
     stdy_var = calculate_stdy_var(file_path,col_index=col_index)
     tolerance = calculate_tolerance(file_path,col_index=col_index)
     num_meas = calculate_num_meas(file_path,col_index=col_index)
-    t_stat = calculate_t_stats(file_path,col_index=col_index,ref_value=255)
-    Cg = calculate_Cg(file_path,col_index=col_index)
+    t_stat = calculate_t_stats(file_path,col_index=col_index,ref_value=ref_value)
+    Cg = calculate_Cg(file_path,col_index=col_index, tolerance=tol)
     Cgk = calculate_Cgk(file_path,col_index=col_index,ref_value=255)
     var_percent = calculate_percent_var(file_path,col_index=col_index)
 
@@ -260,7 +262,7 @@ def generate_graph(col_index = None, ref_value=None):
     values = [means["Mean"], std["Std Deviation"], stdy_var["Study Variable"], num_meas["# of Measurments"], t_stat["t-Statistics"], Cg["Cg"], Cgk["Cgk"], var_percent["% Var"]]
 
     # Convert all numeric values to formatted strings for display
-    formatted_values = [f"{value:.2f}" if isinstance(value, float) else str(value) for value in values]
+    formatted_values = [f"{value:.5f}" if isinstance(value, float) else str(value) for value in values]
 
     # Adding the table below the run chart
     table = plt.table(cellText=list(zip(metrics, formatted_values)),
@@ -293,4 +295,4 @@ def generate_graph(col_index = None, ref_value=None):
 file_path = 'Data.xlsx'
 sheet_name = 'Sheet1'
 
-generate_graph(col_index=4, ref_value=470)
+generate_graph(col_index=4, ref_value=470, tol=20)
