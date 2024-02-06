@@ -135,6 +135,7 @@ def calculate_Cg(file_path, sheet_name='Sheet1', col_index=None, K=20, tolerance
     # Validate col_index
     if col_index is None or col_index >= len(df.columns):
         raise ValueError("Column index is required and must be within the range of available columns.")
+    # Validate ref_value    
     if tolerance is None:
         raise ValueError("Tolerance is required.")
 
@@ -148,7 +149,7 @@ def calculate_Cg(file_path, sheet_name='Sheet1', col_index=None, K=20, tolerance
     return {'Cg': Cg}
 
 #Cgk
-def calculate_Cgk(file_path, sheet_name='Sheet1', col_index=None, K=20, ref_value=None):
+def calculate_Cgk(file_path, sheet_name='Sheet1', col_index=None, K=20, ref_value=None, tolerance=None):
     # Read the Excel file
     df = pd.read_excel(file_path, sheet_name=sheet_name)
     
@@ -156,19 +157,18 @@ def calculate_Cgk(file_path, sheet_name='Sheet1', col_index=None, K=20, ref_valu
     if col_index is None or col_index >= len(df.columns):
         raise ValueError("Column index is required and must be within the range of available columns.")
     if ref_value is None:
-        raise ValueError("Reference value parameter is required but was not provided.")
-    
+        raise ValueError("Reference value is required.")
+    # Validate ref_value    
+    if tolerance is None:
+        raise ValueError("Tolerance is required.")
+
     # Use the previously defined functions to calculate mean, study variation, and tolerance
     mean_value = calculate_mean(file_path, sheet_name, col_index)['Mean']
-    tolerance = calculate_tolerance(file_path, sheet_name, col_index)['Tolerance']
     SV = calculate_stdy_var(file_path, sheet_name, col_index)['Study Variable']
-    
-    # Tolerance is the difference between USL and LSL
-    tolerance_range = tolerance['USL'] - tolerance['LSL']
-    
+        
     # Calculate Cgk for the specified column
     bias = abs(mean_value - ref_value)
-    Cgk = ((K / 200.0) * tolerance_range - bias) / (SV / 2)
+    Cgk = ((K / 200.0)*tolerance - bias) / (SV / 2)
     
     # Return a dictionary with the column name and its Cgk value
     column_name = df.columns[col_index]
@@ -221,7 +221,7 @@ def generate_graph(col_index = None, ref_value=None, tol=None):
     num_meas = calculate_num_meas(file_path,col_index=col_index)
     t_stat = calculate_t_stats(file_path,col_index=col_index,ref_value=ref_value)
     Cg = calculate_Cg(file_path,col_index=col_index, tolerance=tol)
-    Cgk = calculate_Cgk(file_path,col_index=col_index,ref_value=255)
+    Cgk = calculate_Cgk(file_path,col_index=col_index,ref_value=ref_value, tolerance=tol)
     var_percent = calculate_percent_var(file_path,col_index=col_index)
 
     results = {
