@@ -244,7 +244,7 @@ def generate_graph(col_index = None, ref_value=None, tol=None):
     plt.plot(df.iloc[:,0], df.iloc[:,col_index], marker='o')
     plt.title(f'Type 1 Gage Study for {df.columns[col_index]}')
     plt.xlabel('Observations')
-    plt.ylabel('Data')
+    plt.ylabel(f'{df.columns[col_index]}')
     plt.ylim(new_LSL,new_USL)
     plt.axhline(y=LSL, color='r', linestyle='--', label='LSL: Ref - 0.1xTol')
     plt.axhline(y=USL, color='r', linestyle='--', label='USL: Ref + 0.1xTol')
@@ -283,12 +283,11 @@ def generate_graph(col_index = None, ref_value=None, tol=None):
     cropped_img = img.crop((left, top, right, bottom))
 
     # Save the cropped image
-    cropped_img.save(f'./Images/Graph_Col{col_index}.png')
+    cropped_img.save(f'./Images/Type1_{df.columns[col_index]}.png')
 
 file_path = 'Data.xlsx'
 sheet_name = 'Sheet1'
 
-generate_graph(col_index=1, ref_value=1, tol=0.5)
-generate_graph(col_index=2, ref_value=1, tol=0.2)
-generate_graph(col_index=3, ref_value=165, tol=200)
-generate_graph(col_index=4, ref_value=470, tol=20)
+generate_graph(col_index=1, ref_value=1, tol=0.2)
+generate_graph(col_index=2, ref_value=1, tol=30)
+generate_graph(col_index=3, ref_value=1, tol=20)
