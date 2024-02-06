@@ -175,24 +175,21 @@ def calculate_Cgk(file_path, sheet_name='Sheet1', col_index=None, K=20, ref_valu
     return {'Cgk': Cgk}
 
 #%Var
-def calculate_percent_var(file_path, sheet_name='Sheet1', col_index=None, K=20):
+def calculate_percent_var(file_path, sheet_name='Sheet1', col_index=None, K=20, tolerance=None):
     # Read the Excel file
     df = pd.read_excel(file_path, sheet_name=sheet_name)
     
     # Validate col_index
     if col_index is None or col_index >= len(df.columns):
         raise ValueError("Column index is required and must be within the range of available columns.")
+    if tolerance is None or tolerance == 0:
+        raise ValueError("Tolerance is required and must be non-zero.")
     
-    # Extract column name using col_index
-    column_name = df.columns[col_index]
-
     # Calculate the study variation and tolerance for the specified column
     SV = calculate_stdy_var(file_path, sheet_name, col_index)['Study Variable']
-    tolerance_values = calculate_tolerance(file_path, sheet_name, col_index)
-    tolerance_range = tolerance_values['Tolerance']['USL'] - tolerance_values['Tolerance']['LSL']
     
     # Calculate % Var for the specified column
-    percent_var = (SV / tolerance_range) * 100
+    percent_var = (SV / tolerance ) * 100
     
     # Return a dictionary with the column name and its % Var and Cg value
     return {'% Var': percent_var}
@@ -222,14 +219,12 @@ def generate_graph(col_index = None, ref_value=None, tol=None):
     t_stat = calculate_t_stats(file_path,col_index=col_index,ref_value=ref_value)
     Cg = calculate_Cg(file_path,col_index=col_index, tolerance=tol)
     Cgk = calculate_Cgk(file_path,col_index=col_index,ref_value=ref_value, tolerance=tol)
-    var_percent = calculate_percent_var(file_path,col_index=col_index)
+    var_percent = calculate_percent_var(file_path,col_index=col_index, tolerance=tol)
 
     results = {
         "Mean": means['Mean'],
         "Std Deviation": std['Std Deviation'],
         "Study Variation": stdy_var['Study Variable'],
-        "USL": tolerance['Tolerance']['USL'],
-        "LSL": tolerance['Tolerance']['LSL'],
         "# of Measurements": num_meas['# of Measurments'],
         "t-Statistics": t_stat['t-Statistics'],
         "Cg": Cg['Cg'],
@@ -237,13 +232,13 @@ def generate_graph(col_index = None, ref_value=None, tol=None):
         "% Var": var_percent['% Var']
     }
 
-    USL = tolerance['Tolerance']['USL']
-    LSL = tolerance['Tolerance']['LSL']
-    range_buffer_percentage = 0.30  # Adjust the buffer percentage as needed
+    USL = ref_value + (0.1*tol)
+    LSL = ref_value - (0.1*tol)
+    range_buffer_percentage = 0.50  # Adjust the buffer percentage as needed
     range_buffer = (USL - LSL) * range_buffer_percentage
     new_LSL = LSL - range_buffer
     new_USL = USL + range_buffer
-    values = [f"{value:.2f}" if isinstance(value, float) else str(value) for value in results.values()]
+    values = [f"{value:.5f}" if isinstance(value, float) else str(value) for value in results.values()]
     plt.figure(figsize=(12, 10))
     plt.subplot(211)  # Adjust this to create space for the table
     plt.plot(df.iloc[:,0], df.iloc[:,col_index], marker='o')
@@ -251,16 +246,14 @@ def generate_graph(col_index = None, ref_value=None, tol=None):
     plt.xlabel('Observations')
     plt.ylabel('Data')
     plt.ylim(new_LSL,new_USL)
-    plt.axhline(y=LSL, color='r', linestyle='--', label='LSL')
-    plt.axhline(y=USL, color='r', linestyle='--', label='USL')
+    plt.axhline(y=LSL, color='r', linestyle='--', label='LSL: Ref - 0.1xTol')
+    plt.axhline(y=USL, color='r', linestyle='--', label='USL: Ref + 0.1xTol')
     plt.axhline(y=ref_value, color='g', linestyle='-', label='USL', lw=0.5)
-    plt.grid(True)
     plt.legend()
 
     # Prepare table data
     metrics = ["Mean", "Std Deviation", "Study Variation (6*Std Deviation)", "# of Measurements", "t-Statistics", "Cg", "Cgk", "% Var"]
     values = [means["Mean"], std["Std Deviation"], stdy_var["Study Variable"], num_meas["# of Measurments"], t_stat["t-Statistics"], Cg["Cg"], Cgk["Cgk"], var_percent["% Var"]]
-
     # Convert all numeric values to formatted strings for display
     formatted_values = [f"{value:.5f}" if isinstance(value, float) else str(value) for value in values]
 
@@ -295,4 +288,7 @@ def generate_graph(col_index = None, ref_value=None, tol=None):
 file_path = 'Data.xlsx'
 sheet_name = 'Sheet1'
 
+generate_graph(col_index=1, ref_value=1, tol=0.5)
+generate_graph(col_index=2, ref_value=1, tol=0.2)
+generate_graph(col_index=3, ref_value=165, tol=200)
 generate_graph(col_index=4, ref_value=470, tol=20)
